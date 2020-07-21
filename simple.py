@@ -1,3 +1,4 @@
+import sys
 PRINT_TIM = 0b00000001
 HALT = 0b10  # 2
 PRINT_NUM = 0b00000011  # opcode 3
@@ -8,24 +9,56 @@ ADD = 0b110
 
 # registers[2] = registers[2] + registers[3]
 
-memory = [
-    PRINT_TIM,
-    PRINT_TIM,
-    PRINT_NUM,
-    42,
-    SAVE,
-    2,       # register to put it in
-    99,      # number to save
-    SAVE,
-    3,      # register to save in
-    1,      # number to save
-    ADD,
-    2,   # register to look at, and save stuff in
-    3,   # register to look at
-    PRINT_REG,
-    2,       # register to look at
-    HALT,
-]
+# memory = [
+    # PRINT_TIM,
+    # PRINT_TIM,
+    # PRINT_NUM,
+    # 42,
+    # SAVE,
+    # 2,       # register to put it in
+    # 99,      # number to save
+    # SAVE,
+    # 3,      # register to save in
+    # 1,      # number to save
+    # ADD,
+    # 2,   # register to look at, and save stuff in
+    # 3,   # register to look at
+    # PRINT_REG,
+    # 2,       # register to look at
+    # HALT,
+# ]
+
+
+memory = [0] * 256
+
+
+def load_memory(file_name):
+    try:
+        address = 0
+        with open(file_name) as file:
+            for line in line:
+                splt_line = line.split('#')[0]
+                command = splt_line.strip()
+
+                if command == '':
+                    continue
+
+                instruction = int(command, 2)
+                memory[address] = instruction
+
+                address += 1
+
+    except FileNotFoundError:
+        print(f'{sys.argv[0]: sys.argv[1]} file was not found')
+
+
+if len(sys.argv) < 2:
+    print("Please pass in a second filename: python3 in and out.py second_filename.py")
+    sys.exit()
+
+file_name = sys.argv[1]
+load_memory(file_name)
+
 
 # write a program to pull each command out of memory and execute
 # We can loop over it!
