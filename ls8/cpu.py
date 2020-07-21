@@ -28,6 +28,22 @@ class CPU:
         self.mar = []
         self.mdr = []
         self.fl = []
+        self.branchtable = {}
+        self.branchtable[LDI] = self.handle_ldi
+        self.branchtable[PRN] = self.handle_prn
+        self.branchtable[MUL] = self.handle_mul
+
+    def handle_ldi(self, a, b):
+        self.reg[a] = b
+        self.pc += 2
+
+    def handle_prn(self, a):
+        print(self.reg[a])
+        self.pc += 2
+
+    def handle_mul(self, a, b):
+        self.alu("MUL", a, b)
+        self.pc += 2
 
     def load(self):
         """Load a program into memory."""
@@ -91,24 +107,26 @@ class CPU:
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            if IR == LDI:
-                self.reg[operand_a] = operand_b
-                self.pc += 2
+            if IR >> 6 == 2:
+                self.branchtable[IR](operand_a, operand_b)
+
+            if (IR >> 6) == 1:
+                self.branchtable[IR](operand_a)
 
             if IR == HLT:
                 running = False
 
-            if IR == PRN:
-                print(self.reg[operand_a])
-                self.pc += 1
+            # if IR == PRN:
+            #     print(self.reg[operand_a])
+            #     self.pc += 1
 
-            if IR == ADD:
-                self.alu("ADD", operand_a, operand_b)
-                self.pc += 2
+            # if IR == ADD:
+            #     self.alu("ADD", operand_a, operand_b)
+            #     self.pc += 2
 
-            if IR == MUL:
-                self.alu("MUL", operand_a, operand_b)
-                self.pc += 2
+            # if IR == MUL:
+            #     self.alu("MUL", operand_a, operand_b)
+            #     self.pc += 2
 
         self.pc += 1
 
