@@ -32,6 +32,8 @@ class CPU:
         self.branchtable[LDI] = self.handle_ldi
         self.branchtable[PRN] = self.handle_prn
         self.branchtable[MUL] = self.handle_mul
+        self.branchtable[PSH] = self.handle_psh
+        self.branchtable[POP] = self.handle_pop
 
     def handle_ldi(self, a, b):
         self.reg[a] = b
@@ -44,6 +46,20 @@ class CPU:
     def handle_mul(self, a, b):
         self.alu("MUL", a, b)
         self.pc += 2
+
+    def handle_psh(self, a):
+        # decrement the stack pointer
+        self.reg[7] -= 1
+
+        # get the register number
+
+        value = self.reg[a]
+
+        sp = self.reg[7]
+
+        self.ram[sp] = value
+
+        pc += 1
 
     def load(self):
         """Load a program into memory."""
