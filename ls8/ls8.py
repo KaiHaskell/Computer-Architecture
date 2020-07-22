@@ -9,7 +9,7 @@ HLT = 0b00000001
 PRN = 0b01000111
 MUL = 0b10100010
 ADD = 0b10100000
-PUSH = 0b01000101
+PSH = 0b01000101
 POP = 0b01000110
 CALL = 0b01010000
 RET = 0b00010001
@@ -26,10 +26,11 @@ class CPU:
         """Construct a new CPU."""
         self.ram = [0] * 256
         self.reg = [0] * 8
+        self.reg[7] = 0xF4
         self.pc = 0
-        self.mar = []
-        self.mdr = []
-        self.fl = []
+        # self.mar = []
+        # self.mdr = []
+        # self.fl = []
         self.branchtable = {}
         self.branchtable[LDI] = self.handle_ldi
         self.branchtable[PRN] = self.handle_prn
@@ -43,7 +44,7 @@ class CPU:
 
     def handle_prn(self, a):
         print(self.reg[a])
-        self.pc += 2
+        self.pc += 1
 
     def handle_mul(self, a, b):
         self.alu("MUL", a, b)
@@ -76,13 +77,13 @@ class CPU:
 
         self.pc += 1
 
-    def load(self):
+    def load(self, file_name):
         """Load a program into memory."""
 
         try:
             address = 0
             with open(file_name) as file:
-                for line in line:
+                for line in file:
                     splt_line = line.split('#')[0]
                     command = splt_line.strip()
 
@@ -90,7 +91,7 @@ class CPU:
                         continue
 
                     instruction = int(command, 2)
-                    memory[address] = instruction
+                    self.ram[address] = instruction
 
                     address += 1
 
@@ -138,7 +139,7 @@ class CPU:
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            if IR >> 6 == 2:
+            if (IR >> 6) == 2:
                 self.branchtable[IR](operand_a, operand_b)
 
             if (IR >> 6) == 1:
@@ -147,26 +148,11 @@ class CPU:
             if IR == HLT:
                 running = False
 
-            # if IR == PRN:
-            #     print(self.reg[operand_a])
-            #     self.pc += 1
-
-            # if IR == ADD:
-            #     self.alu("ADD", operand_a, operand_b)
-            #     self.pc += 2
-
-            # if IR == MUL:
-            #     self.alu("MUL", operand_a, operand_b)
-            #     self.pc += 2
-
         self.pc += 1
 
-    def ram_read(self, mar):
+    def ram_read(self, address):
         # should accept the address to read and return the value stored there.
-        if MAR < len(self.ram):
-            return self.ram[MAR]
-        else:
-            return None
+        return self.ram[address]
 
     def ram_write(self, value, address):
         self.ram[address] = value
@@ -176,12 +162,12 @@ class CPU:
 
 cpu = CPU()
 
-file = sys.argv[1]
+file_name = sys.argv[1]
 
 if len(sys.argv) < 2:
     print(
         "Please pass in a second filename: python3 in_and_out.py second_filename.py")
     sys.exit()
 
-cpu.load(file)
+cpu.load(file_name)
 cpu.run()
