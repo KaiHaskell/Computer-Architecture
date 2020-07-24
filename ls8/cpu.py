@@ -34,6 +34,9 @@ class CPU:
         self.branchtable[MUL] = self.handle_mul
         self.branchtable[PSH] = self.handle_psh
         self.branchtable[POP] = self.handle_pop
+        self.branchtable[CALL] = self.handle_call
+        self.branchtable[RET] = self.handle_ret
+        self.branchtable[ADD] = self.handle_add
 
     def handle_ldi(self, a, b):
         self.reg[a] = b
@@ -60,6 +63,40 @@ class CPU:
         self.ram[sp] = value
 
         pc += 1
+
+    def handle_pop(self, a):
+        sp = self.reg[7]
+
+        # register = self.ram[self.pc + 1]
+        value = self.ram[sp]
+
+        self.reg[a] = value
+        self.reg[7] += 1
+
+        self.pc += 2
+
+    def handle_call(self, a):
+
+        address = self.reg[a]
+
+        return_address = self.pc + 2
+
+        self.reg[7] -= 1
+        sp = self.reg[7]
+
+        self.ram[sp] = return_address
+
+        self.pc = address
+
+    def handle_ret(self):
+
+        sp = self.reg[7]
+
+        return_address = self.ram[sp]
+
+        self.reg[7] += 1
+
+        self.pc = return_address
 
     def load(self):
         """Load a program into memory."""
@@ -131,6 +168,9 @@ class CPU:
 
             if IR == HLT:
                 running = False
+
+            if IR == RET:
+                self.branchtable[IR]()
 
             # if IR == PRN:
             #     print(self.reg[operand_a])
